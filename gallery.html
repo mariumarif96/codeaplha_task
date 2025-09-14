@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+        
+        .image-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .image-category {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Lightbox Styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.5rem;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .prev-btn {
+            left: 20px;
+        }
+        
+        .next-btn {
+            right: 20px;
+        }
+        
+        .image-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.1rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-buttons {
+                gap: 8px;
+            }
+            
+            .filter-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nature's Gallery</h1>
+            <p class="tagline">Explore the beauty of nature through this responsive image gallery</p>
+        </header>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="mountains">Mountains</button>
+            <button class="filter-btn" data-filter="forests">Forests</button>
+            <button class="filter-btn" data-filter="waterfalls">Waterfalls</button>
+            <button class="filter-btn" data-filter="wildlife">Wildlife</button>
+        </div>
+        
+        <div class="gallery">
+            <!-- Gallery items will be generated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Lightbox -->
+    <div class="lightbox">
+        <button class="close-btn">&times;</button>
+        <button class="nav-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+        <div class="lightbox-content">
+            <img src="" alt="Lightbox Image">
+        </div>
+        <div class="image-counter"></div>
+    </div>
+
+    <script>
+        // Image data with different mountain images
+        const images = [
+            { id: 1, src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb", title: "Mountain Peak", category: "mountains" },
+            { id: 2, src: "https://images.unsplash.com/photo-1448375240586-882707db888b", title: "Enchanted Forest", category: "forests" },
+            { id: 3, src: "https://images.unsplash.com/photo-1518837695005-2083093ee35b", title: "Majestic Waterfall", category: "waterfalls" },
+            { id: 4, src: "https://images.unsplash.com/photo-1504870712357-65ea720d6078", title: "Tropical Beach", category: "beaches" },
+            { id: 5, src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b", title: "Snowy Mountains", category: "mountains" },
+            { id: 6, src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4", title: "Mountain Range", category: "mountains" },
+            { id: 7, src: "https://images.unsplash.com/photo-1476820865390-c52aeebb9891", title: "Forest Trail", category: "forests" },
+            { id: 8, src: "https://images.unsplash.com/photo-1514064019862-23e2a332a6a6", title: "Fox in Snow", category: "wildlife" },
+            { id: 9, src: "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e", title: "Colorful Forest", category: "forests" },
+            { id: 10, src: "https://images.unsplash.com/photo-1543852786-1cf6624b9987", title: "Wild Tiger", category: "wildlife" },
+            { id: 11, src: "https://images.unsplash.com/photo-1571863533956-01c88e79957e", title: "Icelandic Waterfall", category: "waterfalls" },
+            { id: 12, src: "https://images.unsplash.com/photo-1519681393784-d120267933ba", title: "Mountain Summit", category: "mountains" }
+        ];
+
+        // DOM Elements
+        const gallery = document.querySelector('.gallery');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const lightbox = document.querySelector('.lightbox');
+        const lightboxImg = document.querySelector('.lightbox-content img');
+        const closeBtn = document.querySelector('.close-btn');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        const imageCounter = document.querySelector('.image-counter');
+
+        let currentImageIndex = 0;
+        let filteredImages = [];
+
+        // Initialize gallery
+        function initGallery() {
+            generateGalleryItems(images);
+            filteredImages = images;
+            
+            // Add event listeners
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', filterGallery);
+            });
+            
+            closeBtn.addEventListener('click', closeLightbox);
+            prevBtn.addEventListener('click', showPrevImage);
+            nextBtn.addEventListener('click', showNextImage);
+            
+            // Close lightbox when clicking outside the image
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (lightbox.classList.contains('active')) {
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowLeft') showPrevImage();
+                    if (e.key === 'ArrowRight') showNextImage();
+                }
+            });
+        }
+
+        // Generate gallery items
+        function generateGalleryItems(imagesArray) {
+            gallery.innerHTML = '';
+            
+            imagesArray.forEach((image, index) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.dataset.index = index;
+                galleryItem.dataset.category = image.category;
+                
+                galleryItem.innerHTML = `
+                    <img src="${image.src}" alt="${image.title}">
+                    <div class="overlay">
+                        <div class="image-title">${image.title}</div>
+                        <div class="image-category">${image.category}</div>
+                    </div>
+                `;
+                
+                galleryItem.addEventListener('click', () => openLightbox(index, imagesArray));
+                gallery.appendChild(galleryItem);
+            });
+        }
+
+        // Filter gallery based on category
+        function filterGallery() {
+            const filter = this.dataset.filter;
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (filter === 'all') {
+                filteredImages = images;
+            } else {
+                filteredImages = images.filter(image => image.category === filter);
+            }
+            
+            generateGalleryItems(filteredImages);
+        }
+
+        // Open lightbox
+        function openLightbox(index, imagesArray) {
+            currentImageIndex = index;
+            filteredImages = imagesArray;
+            updateLightboxImage();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        // Close lightbox
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = ''; // Enable scrolling
+        }
+
+        // Show previous image
+        function showPrevImage() {
+            currentImageIndex = (currentImageIndex - 1 + filteredImages.length) % filteredImages.length;
+            updateLightboxImage();
+        }
+
+        // Show next image
+        function showNextImage() {
+            currentImageIndex = (currentImageIndex + 1) % filteredImages.length;
+            updateLightboxImage();
+        }
+
+        // Update lightbox image
+        function updateLightboxImage() {
+            const image = filteredImages[currentImageIndex];
+            lightboxImg.src = image.src;
+            lightboxImg.alt = image.title;
+            imageCounter.textContent = `${currentImageIndex + 1} / ${filteredImages.length}`;
+        }
+
+        // Initialize the gallery when the page loads
+        window.addEventListener('DOMContentLoaded', initGallery);
+    </script>
+</body>
+</html>
